@@ -44,9 +44,6 @@ using Cufflinks on tumor RNA-Seq experiments.
 
 The full manual may be found at http://cole-trapnell-lab.github.io/cufflinks/
 
-CUFFCOMPARE
-----------------------------
-Please see http://cole-trapnell-lab.github.io/cufflinks/manual/
 
 REQUIREMENTS
 ---------------------------
@@ -54,6 +51,7 @@ REQUIREMENTS
 Cufflinks is a standalone tool that requires gcc 4.0 or greater, and runs on
 Linux and OS X.  It depends on Boost (http://www.boost.org) version 1.38 or 
 higher.
+
 
 REFERENCES
 ---------------------------
