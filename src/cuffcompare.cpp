@@ -27,40 +27,40 @@ cuffcompare [-r <reference_mrna.gtf>] [-R] [-T] [-V] [-s <seq_path>] \n\
  across all input files (with a single representative transfrag chosen\n\
  for each clique of matching transfrags across samples).\n\
 \n\
-Options:\n\
--i provide a text file with a list of Cufflinks GTF files to process instead\n\
-   of expecting them as command line arguments (useful when a large number\n\
-   of GTF files should be processed)\n\
+ Options:\n\
+ -i provide a text file with a list of Cufflinks GTF files to process instead\n\
+    of expecting them as command line arguments (useful when a large number\n\
+    of GTF files should be processed)\n\
 \n\
--r a set of known mRNAs to use as a reference for assessing \n\
-   the accuracy of mRNAs or gene models given in <input.gtf>\n\
+ -r reference annotation file (GTF/GFF)\n\
 \n\
--R for -r option, consider only the reference transcripts that\n\
-   overlap any of the input transfrags (Sn correction)\n\
--Q for -r option, consider only the input transcripts that\n\
-   overlap any of the reference transcripts (Sp correction);\n\
-   (Warning: this will discard all \"novel\" loci!)\n\
--M discard (ignore) single-exon transfrags and reference transcripts\n\
--N discard (ignore) single-exon reference transcripts\n\
+ -R for -r option, consider only the reference transcripts that\n\
+    overlap any of the input transfrags (Sn correction)\n\
+ -Q for -r option, consider only the input transcripts that\n\
+    overlap any of the reference transcripts (Sp correction);\n\
+    (Warning: this will discard all \"novel\" loci!)\n\
+ -M discard (ignore) single-exon transfrags and reference transcripts\n\
+ -N discard (ignore) single-exon reference transcripts\n\
 \n\
--s <seq_path> can be a multi-fasta file with all the genomic sequences or \n\
-   a directory containing multiple single-fasta files (one file per contig);\n\
-   lower case bases will be used to classify input transcripts as repeats\n\
+ -s path to genome sequences (optional); this can be either a multi-FASTA\n\
+    file or a directory containing single-fasta files (one for each contig);\n\
+    repeats must be soft-masked (lower case) in order to be able to classify\n\
+    transfrags as repeats\n\
 \n\
--e max. distance (range) allowed from free ends of terminal exons of reference\n\
-   transcripts when assessing exon accuracy (100)\n\
--d max. distance (range) for grouping transcript start sites (100)\n\
--p the name prefix to use for consensus transcripts in the \n\
-   <outprefix>.combined.gtf file (default: 'TCONS')\n\
--C include the \"contained\" transcripts in the .combined.gtf file\n\
--F do not discard intron-redundant transfrags if they share the 5' end\n\
-   (if they differ only at the 3' end))\n\
--G generic GFF input file(s): do not assume Cufflinks GTF, do not\n\
-   discard any intron-redundant transfrags)\n\
--T do not generate .tmap and .refmap files for each input file\n\
--V verbose processing mode (showing all GFF parsing warnings)\n\
--D (debug mode) enables -V and generates debug files <outprefix>.Qdiscarded.lst\n\
-   and <outprefix>.missed_introns.gtf\n\
+ -e max. distance (range) allowed from free ends of terminal exons of reference\n\
+    transcripts when assessing exon accuracy (100)\n\
+ -d max. distance (range) for grouping transcript start sites (100)\n\
+ -p the name prefix to use for consensus transcripts in the \n\
+    <outprefix>.combined.gtf file (default: 'TCONS')\n\
+ -C include the \"contained\" transcripts in the .combined.gtf file\n\
+ -F do not discard intron-redundant transfrags if they share the 5' end\n\
+    (if they differ only at the 3' end)\n\
+ -G generic GFF input file(s): do not assume Cufflinks GTF, i.e. do not\n\
+    discard intron-redundant transfrags\n\
+ -T do not generate .tmap and .refmap files for each input file\n\
+ -V verbose processing mode (also showing GFF parser warnings)\n\
+ -D (debug mode) enables -V and generates additional files: \n\
+    <outprefix>.Qdiscarded.lst and <outprefix>.missed_introns.gtf\n\
 "
 bool debug=false;
 bool perContigStats=false; // -S to enable stats for every single contig
