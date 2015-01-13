@@ -275,7 +275,6 @@ enum LibNormalizationMethod
     CLASSIC_FPKM,
     TMM,
     QUARTILE,
-    ESTIMATED_ABSOLUTE,
     ABSOLUTE // Requires spike-in controls, not yet implemented
 };
 
@@ -636,9 +635,6 @@ public:
     int replicate_num() const { return _replicate_num; }
     void replicate_num(int rn) { _replicate_num = rn; }
     
-    void mode_transcript_coverage(double coverage) { _median_coverage = coverage; }
-    double mode_transcript_coverage() const { return _median_coverage; }
-    
     void ref_gtf(const std::string& file_path, const boost::crc_32_type& gtf_crc )
     {
         _checked_params.ref_gtf_file_path = file_path;
@@ -735,7 +731,6 @@ private:
     std::string _condition_name;
     std::string _file_path;
     int _replicate_num;
-    double _median_coverage;
     
     CheckedParameters _checked_params;
 };
