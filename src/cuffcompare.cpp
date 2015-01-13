@@ -743,111 +743,77 @@ void compareLoci2R(GList<GLocus>& loci, GList<GSuperLocus>& cmpdata,
   GFREE(qtpinovl);
 
   // ---- now intron-chain and transcript comparison
+  GVec<int> matched_refs(super->rmrnas.Count(), 0); //keep track of matched refs
+  GVec<int> amatched_refs(super->rmrnas.Count(), 0); //keep track of fuzzy-matched refs
   for (int i=0;i<super->qmrnas.Count();i++) {
-    uint istart=super->qmrnas[i]->exons.First()->start;
-    uint iend=super->qmrnas[i]->exons.Last()->end;
-    for (int j=0;j<super->rmrnas.Count();j++) {
-      uint jstart=super->rmrnas[j]->exons.First()->start;
-      uint jend=super->rmrnas[j]->exons.Last()->end;
-      if (iend<jstart) break;
-      if (jend<istart) continue;
-      //--- overlap here --
-      bool exonMatch=false;
-      if ((super->qmrnas[i]->udata & 2)!=0) continue; //already found a good matching ref
-      GLocus* qlocus=((CTData*)super->qmrnas[i]->uptr)->locus;
-      GLocus* rlocus=((CTData*)super->rmrnas[j]->uptr)->locus;
-      int ovlen=0;
-      //look for a transcript match ('=' code)
-      if (tMatch(*(super->qmrnas[i]),*(super->rmrnas[j]), ovlen, true)) {
-        super->qmrnas[i]->udata|=2;
-        //fprintf(stderr, "%s\n", super->qmrnas[i]->getID()); //DEBUG ONLY
-        super->mrnaTP++;
-        qlocus->mrnaTP++;
-        rlocus->mrnaTP++;
-        super->mrnaATP++;
-        qlocus->mrnaATP++;
-        rlocus->mrnaATP++;
-        if (super->qmrnas[i]->exons.Count()>1) {
-           super->ichainTP++;
-           qlocus->ichainTP++;
-           rlocus->ichainTP++;
-           super->ichainATP++;
-           qlocus->ichainATP++;
-           rlocus->ichainATP++;
-           }
-      }
-      else { //not an '=' match, look for a fuzzy coord match
-        if ((super->qmrnas[i]->udata & 1)!=0) continue; //fuzzy match already found
-        if (ichainMatch(super->qmrnas[i],super->rmrnas[j],exonMatch, 5)) {
-          //NB: also accepts the possibility that ref's i-chain be a subset of qry's i-chain
-          super->qmrnas[i]->udata|=1;
-          if (super->qmrnas[i]->exons.Count()>1) {
-            super->ichainATP++;
-            qlocus->ichainATP++;
-            rlocus->ichainATP++;
-          }
-          if (exonMatch) {
-              super->mrnaATP++;
-              qlocus->mrnaATP++;
-              rlocus->mrnaATP++;
-          }
-        }
-      } //fuzzy match check
-          /* 
-      if ((super->qmrnas[i]->udata & 1) || ichainMatch(super->qmrnas[i],super->rmrnas[j],exonMatch, 5)) {
-         //fuzzy match
-         //also accepts the possibility that ref's i-chain be a subset of qry's i-chain
-         super->qmrnas[i]->udata|=1;
-         GLocus* qlocus=((CTData*)super->qmrnas[i]->uptr)->locus;
-         GLocus* rlocus=((CTData*)super->rmrnas[j]->uptr)->locus;
-         if (super->qmrnas[i]->exons.Count()>1) {
-              super->ichainATP++;
-              qlocus->ichainATP++;
-              rlocus->ichainATP++;
-              }
-         if (exonMatch) {
-                super->mrnaATP++;
-                qlocus->mrnaATP++;
-                rlocus->mrnaATP++;
-                }
-         if (ichainMatch(super->qmrnas[i],super->rmrnas[j],exonMatch)) {
-             //exact full match of intron chains
-             super->qmrnas[i]->udata|=2;
-             if (super->qmrnas[i]->exons.Count()>1) {
-                //fprintf(stdout, "%s\t%s\n", super->qmrnas[i]->getID(), super->rmrnas[j]->getID());
-                super->ichainTP++;
-                qlocus->ichainTP++;
-                rlocus->ichainTP++;
-                }
-             if (exonMatch) {
-                super->mrnaTP++;
-                qlocus->mrnaTP++;
-                rlocus->mrnaTP++;
-                }
-             } //exact match
-            } // match check
-          */
-      } //ref mrna loop
-    } //qry mrna loop
+	  uint istart=super->qmrnas[i]->exons.First()->start;
+	  uint iend=super->qmrnas[i]->exons.Last()->end;
+	  for (int j=0;j<super->rmrnas.Count();j++) {
+		  if (matched_refs[j]) continue; //already counted a TP here
+		  uint jstart=super->rmrnas[j]->exons.First()->start;
+		  uint jend=super->rmrnas[j]->exons.Last()->end;
+		  if (iend<jstart) break;
+		  if (jend<istart) continue;
+		  //--- overlap here --
+		  bool exonMatch=false;
+		  if (super->qmrnas[i]->udata & 2) continue; //already found a good matching ref
+		  GLocus* qlocus=((CTData*)super->qmrnas[i]->uptr)->locus;
+		  GLocus* rlocus=((CTData*)super->rmrnas[j]->uptr)->locus;
+		  int ovlen=0;
+		  //look for a transcript match ('=' code)
+		  if (tMatch(*(super->qmrnas[i]),*(super->rmrnas[j]), ovlen, true)) {
+			  super->qmrnas[i]->udata|=2;
+			  matched_refs[j]++;
+			  //fprintf(stderr, "%s\n", super->qmrnas[i]->getID()); //DEBUG ONLY
+			  super->mrnaTP++;
+			  qlocus->mrnaTP++;
+			  rlocus->mrnaTP++;
+			  super->mrnaATP++;
+			  qlocus->mrnaATP++;
+			  rlocus->mrnaATP++;
+			  if (super->qmrnas[i]->exons.Count()>1) {
+				  super->ichainTP++;
+				  qlocus->ichainTP++;
+				  rlocus->ichainTP++;
+				  super->ichainATP++;
+				  qlocus->ichainATP++;
+				  rlocus->ichainATP++;
+			  }
+		  }
+		  else { //not an '=' match, look for a fuzzy coord match
+			  if (amatched_refs[j]) continue; //this reference already counted as a TP fuzzy match
+			  if (super->qmrnas[i]->udata & 1) continue; //fuzzy match already found
+			  if (ichainMatch(super->qmrnas[i],super->rmrnas[j],exonMatch, 5)) {
+				  //NB: also accepts the possibility that ref's i-chain be a subset of qry's i-chain
+				  super->qmrnas[i]->udata|=1;
+				  amatched_refs[j]++;
+				  if (super->qmrnas[i]->exons.Count()>1) {
+					  super->ichainATP++;
+					  qlocus->ichainATP++;
+					  rlocus->ichainATP++;
+				  }
+				  if (exonMatch) {
+					  super->mrnaATP++;
+					  qlocus->mrnaATP++;
+					  rlocus->mrnaATP++;
+				  }
+			  }
+		  } //fuzzy match check
+	  } //ref loop
+  } //qry loop
   for (int ql=0;ql<super->qloci.Count();ql++) {
-      //if (super->qloci[ql]->ichainTP+super->qloci[ql]->mrnaTP >0 )
       if (super->qloci[ql]->mrnaTP>0)
                  super->locusQTP++;
-      //if (super->qloci[ql]->ichainATP+super->qloci[ql]->mrnaATP>0)
       if (super->qloci[ql]->mrnaATP>0)
                  super->locusAQTP++;
       }
   for (int rl=0;rl<super->rloci.Count();rl++) {
-      //if (super->rloci[rl]->ichainTP+super->rloci[rl]->mrnaTP >0 )
       if (super->rloci[rl]->mrnaTP >0 )
                  super->locusTP++;
-      //if (super->rloci[rl]->ichainATP+super->rloci[rl]->mrnaATP>0)
       if (super->rloci[rl]->mrnaATP>0)
                  super->locusATP++;
       }
-
   }//for each unlinked locus
-
 }
 
 //look for qry data for a specific genomic sequence
@@ -1547,12 +1513,16 @@ void reportStats(FILE* fout, const char* setname, GSuperLocus& stotal,
     if (fsn>100.0) fsn=100.0;
     fprintf(fout, "      Intron level: \t%5.1f\t%5.1f\t%5.1f\t%5.1f\n",sn, sp, fsn, fsp);
     //intron chains:
-    sp=(100.0*(double)ps->ichainTP)/(ps->ichainTP+ps->ichainFP);
-    sn=(100.0*(double)ps->ichainTP)/(ps->ichainTP+ps->ichainFN);
+    //sp=(100.0*(double)ps->ichainTP)/(ps->ichainTP+ps->ichainFP);
+    //sn=(100.0*(double)ps->ichainTP)/(ps->ichainTP+ps->ichainFN);
+    sp=(100.0*(double)ps->ichainTP)/ps->total_qichains;
+    sn=(100.0*(double)ps->ichainTP)/ps->total_richains;
     if (sp>100.0) sp=100.0;
     if (sn>100.0) sn=100.0;
-    fsp=(100.0*(double)ps->ichainATP)/(ps->ichainATP+ps->ichainAFP);
-    fsn=(100.0*(double)ps->ichainATP)/(ps->ichainATP+ps->ichainAFN);
+    //fsp=(100.0*(double)ps->ichainATP)/(ps->ichainATP+ps->ichainAFP);
+    //fsn=(100.0*(double)ps->ichainATP)/(ps->ichainATP+ps->ichainAFN);
+    fsp=(100.0*(double)ps->ichainATP)/ps->total_qichains;
+    fsn=(100.0*(double)ps->ichainATP)/ps->total_richains;
     if (fsp>100.0) fsp=100.0;
     if (fsn>100.0) fsn=100.0;
     fprintf(fout, "Intron chain level: \t%5.1f\t%5.1f\t%5.1f\t%5.1f\n",sn, sp, fsn, fsp);
@@ -1561,10 +1531,16 @@ void reportStats(FILE* fout, const char* setname, GSuperLocus& stotal,
     fprintf(fout, "      Intron level: \t  -  \t  -  \t  -  \t  -  \n");
     fprintf(fout, "Intron chain level: \t  -  \t  -  \t  -  \t  -  \n");
     }
+    /*
     sp=(100.0*(double)ps->mrnaTP)/(ps->mrnaTP+ps->mrnaFP);
     sn=(100.0*(double)ps->mrnaTP)/(ps->mrnaTP+ps->mrnaFN);
     fsp=(100.0*(double)ps->mrnaATP)/(ps->mrnaATP+ps->mrnaAFP);
     fsn=(100.0*(double)ps->mrnaATP)/(ps->mrnaATP+ps->mrnaAFN);
+    */
+    sp=(100.0*(double)ps->mrnaTP)/ps->total_qmrnas;
+    sn=(100.0*(double)ps->mrnaTP)/ps->total_rmrnas;
+    fsp=(100.0*(double)ps->mrnaATP)/ps->total_qmrnas;
+    fsn=(100.0*(double)ps->mrnaATP)/ps->total_rmrnas;
     if (fsp>100.0) fsp=100.0;
     if (fsn>100.0) fsn=100.0;
     fprintf(fout, "  Transcript level: \t%5.1f\t%5.1f\t%5.1f\t%5.1f\n",sn, sp, fsn, fsp);
